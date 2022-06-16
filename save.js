@@ -1,184 +1,39 @@
-/* eslint-disable node/no-deprecated-api */
-const cheerio = require('cheerio')
-const loadJsonFile = require('load-json-file')
-const axios = require('axios')
-const URL = require('url')
+var xml2js = require('xml2js');
+var parser = new xml2js.Parser(/* options */);
 
-const fetch = async (url) => {
-  try {
-    const { data } = await axios.get(url)
-    return data
-  } catch (error) {
-    await new Promise(resolve => setTimeout(resolve, 10000))
-    return false
-  }
+const getXml = async (url) => {
+  const xml = (await parser.parseStringPromise(await (await fetch(url)).text())).urlset.url
+  return xml.map((x) => x.loc[0])
 }
 
-const urls = async () => {
+const getUrls = async () => {
+  const sitemaps = [
+    'http://valvrareteam.com/post-sitemap.xml',
+    'http://valvrareteam.com/story-sitemap1.xml',
+    'http://valvrareteam.com/story-sitemap2.xml',
+    'http://valvrareteam.com/story-sitemap3.xml',
+    'http://valvrareteam.com/story-sitemap4.xml',
+    'http://valvrareteam.com/story-sitemap5.xml',
+    'http://valvrareteam.com/story-sitemap6.xml'
+  ]
   let urls = []
-  for (let index = 1; index <= 9; index++) {
-    console.log('🚀 ~ index', index)
-    const url = 'http://valvrareteam.com/page/' + index
-    const html = await fetch(url)
-    if (!html) {
-      index--
-      continue
-    }
-    const $ = cheerio.load(html)
-    urls = [...urls, ...$('.front-view-title a').map(function list () {
-      return `${$(this).attr('href')}`
-    }).get()]
+  for (const sitemap of sitemaps) {
+    urls = [...urls, ...await getXml(sitemap)]
   }
   return urls
 }
 
-const updateURLs = async () => {
-  let urls = []
-  const url = 'http://valvrareteam.com'
-  const html = await fetch(url)
-  const $ = cheerio.load(html)
-  urls = [...urls, ...$('.front-view-title a').map(function list () {
-    return `${$(this).attr('href')}`
-  }).get()]
-  return urls
-}
-
-const read = require('read-file')
 const write = require('write-file-utf8')
 
-const save = async () => {
-  const urls = await loadJsonFile('docs/index.html')
-  console.log(urls.length)
-  for (let i = 0; i < urls.length; i++) {
-    console.log(i)
-    const url = urls[i]
-    const qURL = URL.parse(url, true)
-    const pathURL = 'docs' + qURL.pathname + '.html'
-    try {
-      const htmlFile = read.sync(pathURL)
-      const html = await fetch(url)
-      if (!html) {
-        i--
-        continue
-      }
-
-      // eslint-disable-next-line no-unused-vars
-      const $File = cheerio.load(htmlFile)
-      const $ = cheerio.load(html)
-      const chapterURLs = $('.thecontent a').map(function chapters () {
-        return `${$(this).attr('href')}`
-      }).get()
-      await write(pathURL, html)
-
-      for (let j = 0; j < chapterURLs.length; j++) {
-        const chapterURL = chapterURLs[j]
-        const qChapterURL = URL.parse(chapterURL, true)
-        const pathChapterURL = 'docs' + qChapterURL.pathname + '.html'
-        try {
-          // eslint-disable-next-line no-unused-vars
-          const htmlFile = read.sync(pathChapterURL)
-        } catch (error) {
-          console.log('🚀 update ~ i ~ j', i, j)
-          const chapterHTML = await fetch(chapterURL)
-          if (!chapterHTML) {
-            i--
-            continue
-          }
-          await write(pathChapterURL, chapterHTML)
-        }
-      }
-    } catch (error) {
-      const html = await fetch(url)
-      if (!html) {
-        i--
-        continue
-      }
-      html && await write(pathURL, html)
-      const $ = cheerio.load(html)
-      const chapterURLs = $('.thecontent a').map(function chapters () {
-        return `${$(this).attr('href')}`
-      }).get()
-      for (let j = 0; j < chapterURLs.length; j++) {
-        console.log('🚀 new ~ i ~ j', i, j)
-        const chapterURL = chapterURLs[j]
-        const qChapterURL = URL.parse(chapterURL, true)
-        const pathChapterURL = 'docs' + qChapterURL.pathname + '.html'
-        const chapterHTML = await fetch(chapterURL)
-        if (!chapterHTML) {
-          j--
-          continue
-        } else {
-          chapterHTML && await write(pathChapterURL, chapterHTML)
-        }
-      }
-    }
-  }
-}
-
-const update = async () => {
-  const urls = await updateURLs()
-  await write('docs/update.html', JSON.stringify(_urls))
-  for (let i = 0; i < urls.length; i++) {
-    const url = urls[i]
-    const qURL = URL.parse(url, true)
-    const pathURL = 'docs' + qURL.pathname + '.html'
-    try {
-      const htmlFile = read.sync(pathURL)
-      const html = await fetch(url)
-      // eslint-disable-next-line no-unused-vars
-      const $File = cheerio.load(htmlFile)
-      const $ = cheerio.load(html)
-      const chapterURLs = $('.thecontent a').map(function chapters () {
-        return `${$(this).attr('href')}`
-      }).get()
-      html && await write(pathURL, html)
-      for (let j = 0; j < chapterURLs.length; j++) {
-        const chapterURL = chapterURLs[j]
-        const qChapterURL = URL.parse(chapterURL, true)
-        const pathChapterURL = 'docs' + qChapterURL.pathname + '.html'
-        try {
-          // eslint-disable-next-line no-unused-vars
-          const htmlFile = read.sync(pathChapterURL)
-        } catch (error) {
-          console.log('🚀 update ~ i ~ j', i, j)
-          const chapterHTML = await fetch(chapterURL)
-          chapterHTML && await write(pathChapterURL, chapterHTML)
-        }
-      }
-    } catch (error) {
-      const html = await fetch(url)
-      if (!html) {
-        i--
-        continue
-      }
-      html && await write(pathURL, html)
-      const $ = cheerio.load(html)
-      const chapterURLs = $('.thecontent a').map(function chapters () {
-        return `${$(this).attr('href')}`
-      }).get()
-      for (let j = 0; j < chapterURLs.length; j++) {
-        console.log('🚀 new ~ i ~ j', i, j)
-        const chapterURL = chapterURLs[j]
-        const qChapterURL = URL.parse(chapterURL, true)
-        const pathChapterURL = 'docs' + qChapterURL.pathname + '.html'
-        const chapterHTML = await fetch(chapterURL)
-        if (!chapterHTML) {
-          j--
-          continue
-        } else {
-          chapterHTML && await write(pathChapterURL, chapterHTML)
-        }
-      }
-    }
-  }
-}
-
 const start = async () => {
-  console.time('save')
-    const _urls = await urls()
-    await write('docs/index.html', JSON.stringify(_urls))
-    await save()
-  console.timeEnd('save')
+  const urls = await getUrls()
+  await write('docs/index.html', JSON.stringify(await getXml('http://valvrareteam.com/post-sitemap.xml')))
+  for (const url of urls) {
+    const path = url.replace('http://valvrareteam.com/', '')
+    if(!path) continue
+    const html = await (await fetch(url)).text()
+    await write('docs/' + path, html)
+  }
 }
 
 start()
