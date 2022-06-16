@@ -33,7 +33,7 @@ const start = async () => {
   for (let i = 0; i < length; i++) {
     const url = urls[i];
     const path = url.replace('http://valvrareteam.com/', '')
-    if(!path) continue
+    if(!path || path === 'story' ) continue
     try {
       await read.sync('docs/' + path)
     } catch (e) {
