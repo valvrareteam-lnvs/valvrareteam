@@ -128,6 +128,11 @@ parse5@^7.0.0:
   dependencies:
     entities "^4.3.0"
 
+read-file@^0.2.0:
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/read-file/-/read-file-0.2.0.tgz#70c6baf8842ec7d1540f981fd0e6aed4c81bd545"
+  integrity sha512-na/zgd5KplGlR+io+ygXQMIoDfX/Y0bNS5+P2TOXOTk5plquOVd0snudCd30hZJAsnVK2rxuxUP2z0CN+Aw1lQ==
+
 sax@>=0.6.0:
   version "1.2.4"
   resolved "https://registry.yarnpkg.com/sax/-/sax-1.2.4.tgz#2816234e2378bddc4e5354fab5caa895df7100d9"

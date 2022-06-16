@@ -24,15 +24,24 @@ const getUrls = async () => {
 }
 
 const write = require('write-file-utf8')
+const read = require('read-file')
 
 const start = async () => {
   const urls = await getUrls()
   await write('docs/index.html', JSON.stringify(await getXml('http://valvrareteam.com/post-sitemap.xml')))
-  for (const url of urls) {
+  const length = urls.length
+  for (let i = 0; i < length; i++) {
+    const url = urls[i];
     const path = url.replace('http://valvrareteam.com/', '')
     if(!path) continue
-    const html = await (await fetch(url)).text()
-    await write('docs/' + path, html)
+    try {
+      await read.sync('docs/' + path)
+    } catch (e) {
+      const html = await (await fetch(url)).text()
+      await write('docs/' + path, html)
+      console.log(i, length, url)
+    }
+
   }
 }
 
