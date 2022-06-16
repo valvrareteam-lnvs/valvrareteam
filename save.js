@@ -38,7 +38,9 @@ const start = async () => {
       await read.sync('docs/' + path)
     } catch (e) {
       const html = await (await fetch(url)).text()
-      await write('docs/' + path, html)
+      let fPath = 'docs/' + path;
+      if(fPath.includes('docs/story')) fPath = fPath + '.html'
+      await write(fPath, html)
       console.log(i, length, url)
     }
 
