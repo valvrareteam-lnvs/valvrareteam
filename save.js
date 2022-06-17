@@ -28,18 +28,26 @@ const read = require('read-file')
 
 const start = async () => {
   const urls = await getUrls()
-  await write('docs/index.html', JSON.stringify(await getXml('http://valvrareteam.com/post-sitemap.xml')))
+  const blacks = [
+    'http://valvrareteam.com/',
+    'http://valvrareteam.com/cap-nhat-cac-light-novel.html',
+    'http://valvrareteam.com/danh-sach-light-novel-thang-8-cua-mf-bunko-j.html',
+    'http://valvrareteam.com/danh-sach-light-novel-thang-8-cua-fujimi-fantasia-bunko.html',
+    'http://valvrareteam.com/ung-dung-mobile.html',
+    'http://valvrareteam.com/anh-minh-hoa-sword-art-online-16.html'
+  ]
+  await write('docs/index.html', JSON.stringify((await getXml('http://valvrareteam.com/post-sitemap.xml')).filter(u => !blacks.includes(u))))
   const length = urls.length
   for (let i = 0; i < length; i++) {
     const url = urls[i];
     const path = url.replace('http://valvrareteam.com/', '')
     if(!path || path === 'story' ) continue
+    let fPath = 'docs/' + path;
+    if(fPath.includes('docs/story')) fPath = fPath + '.html'
     try {
-      await read.sync('docs/' + path)
+      await read.sync(fPath)
     } catch (e) {
       const html = await (await fetch(url)).text()
-      let fPath = 'docs/' + path;
-      if(fPath.includes('docs/story')) fPath = fPath + '.html'
       await write(fPath, html)
       console.log(i, length, url)
     }
