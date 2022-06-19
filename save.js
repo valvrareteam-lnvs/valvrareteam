@@ -34,7 +34,10 @@ const start = async () => {
     'http://valvrareteam.com/danh-sach-light-novel-thang-8-cua-mf-bunko-j.html',
     'http://valvrareteam.com/danh-sach-light-novel-thang-8-cua-fujimi-fantasia-bunko.html',
     'http://valvrareteam.com/ung-dung-mobile.html',
-    'http://valvrareteam.com/anh-minh-hoa-sword-art-online-16.html'
+    'http://valvrareteam.com/anh-minh-hoa-sword-art-online-16.html',
+    'http://valvrareteam.com/huong-dan-tao-bang.html',
+    'http://valvrareteam.com/valvrare-team-tim-kiem-nhan-tai.html',
+    'http://valvrareteam.com/876.html'
   ]
   await write('docs/index.html', JSON.stringify((await getXml('http://valvrareteam.com/post-sitemap.xml')).filter(u => !blacks.includes(u))))
   const length = urls.length
