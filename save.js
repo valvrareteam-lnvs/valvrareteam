@@ -1,4 +1,5 @@
 var xml2js = require('xml2js');
+var cheerio = require('cheerio');
 var parser = new xml2js.Parser(/* options */);
 
 const getXml = async (url) => {
@@ -23,6 +24,15 @@ const getUrls = async () => {
   return urls
 }
 
+const getPage1 = async () => {
+  const _res = await fetch(`http://valvrareteam.com/light-novel/page/1`)
+  const _$ = cheerio.load(await _res.text())
+  const _urls = [..._$('h2.front-view-title a').map(function list () {
+    return _$(this).attr('href')
+  }).get()]
+  return _urls
+}
+
 const write = require('write-file-utf8')
 const read = require('read-file')
 
@@ -40,6 +50,7 @@ const start = async () => {
     'http://valvrareteam.com/876.html'
   ]
   await write('docs/index.html', JSON.stringify((await getXml('http://valvrareteam.com/post-sitemap.xml')).filter(u => !blacks.includes(u))))
+  await write('docs/update.html', JSON.stringify((await getPage1()).filter(u => !blacks.includes(u))))
   const length = urls.length
   for (let i = 0; i < length; i++) {
     const url = urls[i];
@@ -54,7 +65,6 @@ const start = async () => {
       await write(fPath, html)
       console.log(i, length, url)
     }
-
   }
 }
 
