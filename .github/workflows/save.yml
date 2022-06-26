@@ -25,5 +25,5 @@ jobs:
           git config --global user.name 'valvrareteam-lnvs' 
           git config --global user.email 'valvrareteam@lnvs.net'
           git add -A
-          git commit -m '⬆️ save new posts with github action'
+          git commit --allow-empty -m '⬆️ save new posts with github action'
           git push -f
